@@ -1,0 +1,32 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="BSD 3-Clause"
+issueTrackerURL="https://github.com/candlestickphone/slim_pickings/issues"
+
+[[mods]]
+modId="slim_pickings"
+version="1.0"
+displayName="Slim Pickings"
+logoFile="looker.png"
+credits="shamuel"
+
+description='''
+A simple, vanilla-style item pickup mod.
+'''
+
+[[mixins]]
+config="slim_pickings.mixins.json"
+
+[[dependencies.slim_pickings]] #optional
+    modId="neoforge" #mandatory
+    type="required" #mandatory
+    versionRange="[21.1.250,)" #mandatory
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.slim_pickings]]
+    modId="minecraft"
+    type="required"
+    versionRange="[1.21.1]"
+    ordering="NONE"
+    side="BOTH"

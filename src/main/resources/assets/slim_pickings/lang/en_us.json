@@ -1,0 +1,11 @@
+{
+  "slim_pickings.configuration.title": "Slim Pickings Configs",
+  "slim_pickings.configuration.section.slim_pickings.common.toml": "Slim Pickings Configs",
+  "slim_pickings.configuration.section.slim_pickings.common.toml.title": "Slim Pickings Configs",
+  "slim_pickings.configuration.keybind_mode": "Toggle Keybind",
+  "slim_pickings.configuration.big_pickings": "Vanilla Behavior",
+  "slim_pickings.configuration.looking_items": "Item Effects",
+  "slim_pickings.gui.controls_screen.pickup": "Pickup",
+  "slim_pickings.gui.controls_screen.pickup.tooltip.big_pickings": "Vanilla behavior is enabled. You may restore keybind based pickup in your client config.",
+  "slim_pickings.key.pickup": "Loose Item Pickup"
+}
