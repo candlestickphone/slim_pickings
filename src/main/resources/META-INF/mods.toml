@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[1,)"
+loaderVersion="[47,)"
 license="BSD 3-Clause"
 issueTrackerURL="https://github.com/candlestickphone/slim_pickings/issues"
 
@@ -14,19 +14,16 @@ description='''
 A simple, vanilla-style item pickup mod.
 '''
 
-[[mixins]]
-config="slim_pickings.mixins.json"
-
-[[dependencies.slim_pickings]] #optional
-    modId="neoforge" #mandatory
-    type="required" #mandatory
-    versionRange="[21.1.250,)" #mandatory
+[[dependencies.slim_pickings]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.slim_pickings]]
     modId="minecraft"
-    type="required"
-    versionRange="[1.21.1]"
+    mandatory=true
+    versionRange="[1.20.1]"
     ordering="NONE"
     side="BOTH"

@@ -1,22 +1,47 @@
 package net.samipla.slim_pickings.mixin;
 
 import net.minecraft.client.OptionInstance;
-import net.minecraft.client.Options;
-import net.minecraft.client.gui.screens.options.controls.ControlsScreen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.MouseSettingsScreen;
+import net.minecraft.client.gui.screens.controls.ControlsScreen;
+import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.samipla.slim_pickings.Config;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.Overwrite;
 
+@OnlyIn(Dist.CLIENT)
 @Mixin(ControlsScreen.class)
-public class ControlsScreenMixin {
+public abstract class ControlsScreenMixin extends net.minecraft.client.gui.screens.OptionsSubScreen {
 
-    @Inject(method = "options", at = @At("RETURN"), cancellable = true)
-    private static void slim_pickings$addCustomOptions(Options options, CallbackInfoReturnable<OptionInstance<?>[]> cir) {
-        OptionInstance<?>[] vArr = cir.getReturnValue();
-
+    public ControlsScreenMixin(net.minecraft.client.gui.screens.Screen screen, net.minecraft.client.Options options) {
+        super(screen, options, Component.translatable("controls.title"));
+    }
+    
+    @Overwrite
+    protected void init() {
+        super.init();
+        int i = this.width / 2 - 155;
+        int j = i + 160;
+        int k = this.height / 6;
+        
+        this.addRenderableWidget(
+            Button.builder(Component.translatable("options.mouse_settings"), button -> this.minecraft.setScreen(new MouseSettingsScreen(this, this.options)))
+               .bounds(i, k, 150, 20)
+               .build()
+        );
+        this.addRenderableWidget(
+            Button.builder(Component.translatable("controls.keybinds"), button -> this.minecraft.setScreen(new KeyBindsScreen(this, this.options)))
+               .bounds(j, k, 150, 20)
+               .build()
+        );
+        k += 24;
+        this.addRenderableWidget(this.options.toggleCrouch().createButton(this.options, i, k, 150));
+        this.addRenderableWidget(this.options.toggleSprint().createButton(this.options, j, k, 150));
+        k += 24;
         boolean disabled = Config.BIG_PICKINGS.get();
 
         OptionInstance<Boolean> pickupModeOption = new OptionInstance<>(
@@ -37,13 +62,15 @@ public class ControlsScreenMixin {
                 }
         );
 
-        OptionInstance<?>[] newArr = new OptionInstance<?>[vArr.length + 1];
-        int insert = 2;
-
-        System.arraycopy(vArr, 0, newArr, 0, insert);
-        newArr[insert] = pickupModeOption;
-        System.arraycopy(vArr, insert, newArr, insert + 1, vArr.length - insert);
-
-        cir.setReturnValue(newArr);
+        this.addRenderableWidget(pickupModeOption.createButton(this.options, i, k, 150));
+        this.addRenderableWidget(this.options.autoJump().createButton(this.options, j, k, 150));
+        k += 24;
+        this.addRenderableWidget(this.options.operatorItemsTab().createButton(this.options, i, k, 150));
+        k += 24;
+        this.addRenderableWidget(
+            Button.builder(CommonComponents.GUI_DONE, button -> this.minecraft.setScreen(this.lastScreen))
+               .bounds(this.width / 2 - 100, k, 200, 20)
+               .build()
+        );
     }
 }

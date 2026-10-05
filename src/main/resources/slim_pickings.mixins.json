@@ -1,12 +1,16 @@
 {
   "required": true,
   "package": "net.samipla.slim_pickings.mixin",
-  "compatibilityLevel": "JAVA_21",
-  "mixins": ["ControlsScreenMixin", "OptionInstanceMixin", "ItemEntityAccessor", "ItemEntityRendererMixin"],
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "ItemEntityAccessor"
+  ],
+  "client": [
+    "ControlsScreenMixin",
+    "OptionInstanceMixin",
+    "ItemEntityRendererMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "overwrites": {
-    "requireAnnotations": true
   }
 }

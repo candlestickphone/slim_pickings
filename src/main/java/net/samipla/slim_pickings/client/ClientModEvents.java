@@ -5,22 +5,22 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.EntityHitResult;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.samipla.slim_pickings.Config;
 import net.samipla.slim_pickings.SlimPickings;
 import net.samipla.slim_pickings.client.utils.PickupTargetUtils;
 import net.samipla.slim_pickings.network.ItemInteractPayload;
 import net.samipla.slim_pickings.network.KeySyncPayload;
+import net.samipla.slim_pickings.network.ModMessages;
 
 import org.lwjgl.glfw.GLFW;
 
-@EventBusSubscriber(modid = SlimPickings.MODID, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = SlimPickings.MODID, value = Dist.CLIENT)
 public class ClientModEvents {
 
     public static final KeyMapping PICKUP_KEY = new KeyMapping(
@@ -34,7 +34,7 @@ public class ClientModEvents {
     private static boolean toggled;
     private static boolean picking;
 
-    @EventBusSubscriber(modid = SlimPickings.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+    @Mod.EventBusSubscriber(modid = SlimPickings.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class ModBus {
         @SubscribeEvent
         public static void registerBindings(RegisterKeyMappingsEvent event) {
@@ -43,7 +43,9 @@ public class ClientModEvents {
     }
 
     @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post event) {
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+
         boolean state = false;
         if (!Config.BIG_PICKINGS.get()) {
             boolean pressed = PICKUP_KEY.isDown();
@@ -55,7 +57,8 @@ public class ClientModEvents {
         }
 
         if (state != picking) {
-            PacketDistributor.sendToServer(new KeySyncPayload(picking = state));
+            picking = state;
+            ModMessages.sendToServer(new KeySyncPayload(picking));
         }
     }
 
@@ -74,7 +77,7 @@ public class ClientModEvents {
             ItemEntity targetItem = PickupTargetUtils.getTargetedItemEntity(mc);
             if (targetItem != null) {
                 event.setCanceled(true);
-                PacketDistributor.sendToServer(new ItemInteractPayload(targetItem.getId()));
+                ModMessages.sendToServer(new ItemInteractPayload(targetItem.getId()));
                 mc.player.swing(mc.player.getUsedItemHand());
             }
         }

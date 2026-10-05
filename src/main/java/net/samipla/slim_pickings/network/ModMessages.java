@@ -1,42 +1,43 @@
 package net.samipla.slim_pickings.network;
 
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
 import net.samipla.slim_pickings.SlimPickings;
-import net.samipla.slim_pickings.server.ItemInteractionUtils;
 
-@EventBusSubscriber(modid = SlimPickings.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class ModMessages {
-    @SubscribeEvent
-    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        var registrar = event.registrar("1.0");
+    private static SimpleChannel INSTANCE;
 
-        registrar.playToServer(
-            KeySyncPayload.TYPE, 
-            KeySyncPayload.STREAM_CODEC, 
-            (payload, context) -> context.enqueueWork(() -> { 
-                if (context.player() instanceof ServerPlayer player) {
-                    SlimPickings.setPlayerKey(player.getUUID(), payload.isHeld()); 
-                }
-            })
-        );
+    private static int packetId = 0;
+    private static int nextId() {
+        return packetId++;
+    }
 
-        registrar.playToServer(
-            ItemInteractPayload.TYPE,
-            ItemInteractPayload.STREAM_CODEC,
-            (payload, context) -> context.enqueueWork(() -> {
-                if (context.player() instanceof ServerPlayer player) {
-                    Entity entity = player.level().getEntity(payload.entityId());
-                    if (entity instanceof ItemEntity itemEntity) {
-                        ItemInteractionUtils.handleInteraction(itemEntity, player, InteractionHand.MAIN_HAND, 0);
-                    }
-                }
-            })
-        );
+    public static void register() {
+        SimpleChannel net = NetworkRegistry.ChannelBuilder
+                .named(new ResourceLocation(SlimPickings.MODID, "messages"))
+                .networkProtocolVersion(() -> "1.0")
+                .clientAcceptedVersions(s -> true)
+                .serverAcceptedVersions(s -> true)
+                .simpleChannel();
+
+        INSTANCE = net;
+
+        net.messageBuilder(KeySyncPayload.class, nextId(), NetworkDirection.PLAY_TO_SERVER)
+                .encoder(KeySyncPayload::toBytes)
+                .decoder(KeySyncPayload::new)
+                .consumerNetworkThread(KeySyncPayload::handle)
+                .add();
+
+        net.messageBuilder(ItemInteractPayload.class, nextId(), NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ItemInteractPayload::toBytes)
+                .decoder(ItemInteractPayload::new)
+                .consumerNetworkThread(ItemInteractPayload::handle)
+                .add();
+    }
+
+    public static <MSG> void sendToServer(MSG message) {
+        INSTANCE.sendToServer(message);
     }
 }

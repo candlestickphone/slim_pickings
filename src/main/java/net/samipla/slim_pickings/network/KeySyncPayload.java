@@ -1,17 +1,43 @@
 package net.samipla.slim_pickings.network;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.network.NetworkEvent;
+import net.samipla.slim_pickings.SlimPickings;
 
-public record KeySyncPayload(boolean isHeld) implements CustomPacketPayload {
-    public static final Type<KeySyncPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath("slim_pickings", "key_sync"));
-    public static final StreamCodec<ByteBuf, KeySyncPayload> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, KeySyncPayload::isHeld, KeySyncPayload::new);
+import java.util.function.Supplier;
 
-    @Override 
-    public Type<? extends CustomPacketPayload> type() { 
-        return TYPE; 
+public class KeySyncPayload {
+    private final boolean isHeld;
+
+    public KeySyncPayload(boolean isHeld) {
+        this.isHeld = isHeld;
+    }
+
+    // Decoder constructor reading from FriendlyByteBuf
+    public KeySyncPayload(FriendlyByteBuf buf) {
+        this.isHeld = buf.readBoolean();
+    }
+
+    // Encoder writing to FriendlyByteBuf
+    public void toBytes(FriendlyByteBuf buf) {
+        buf.writeBoolean(isHeld);
+    }
+
+    // Packet execution handler logic on the server side
+    public boolean handle(Supplier<NetworkEvent.Context> supplier) {
+        NetworkEvent.Context context = supplier.get();
+        context.enqueueWork(() -> {
+            ServerPlayer player = context.getSender();
+            if (player != null) {
+                SlimPickings.setPlayerKey(player.getUUID(), isHeld);
+            }
+        });
+        context.setPacketHandled(true);
+        return true;
+    }
+
+    public boolean isHeld() {
+        return isHeld;
     }
 }

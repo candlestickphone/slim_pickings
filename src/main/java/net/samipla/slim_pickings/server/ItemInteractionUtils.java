@@ -3,10 +3,10 @@ package net.samipla.slim_pickings.server;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.ForgeMod;
 
 public class ItemInteractionUtils {
     public static InteractionResult handleInteraction(ItemEntity itemEntity, Player player, InteractionHand hand, int pickupDelay) {
@@ -18,7 +18,7 @@ public class ItemInteractionUtils {
             return InteractionResult.PASS;
         }
 
-        double reach = player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE) + 1.5D;
+        double reach = player.getAttributeValue(ForgeMod.ENTITY_REACH.get()) + 1.5D;
         if (player.distanceToSqr(itemEntity) > reach * reach) {
             return InteractionResult.PASS;
         }

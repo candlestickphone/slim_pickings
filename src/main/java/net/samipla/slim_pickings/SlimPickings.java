@@ -1,18 +1,13 @@
 package net.samipla.slim_pickings;
 
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.util.TriState;
-import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
+import net.samipla.slim_pickings.network.ModMessages;
 
 import java.util.Map;
 import java.util.UUID;
@@ -24,13 +19,11 @@ public class SlimPickings {
 
     private static final Map<UUID, Boolean> PLAYER_KEY_STATES = new ConcurrentHashMap<>();
 
-    public SlimPickings(IEventBus modEventBus, ModContainer modContainer) {
-        NeoForge.EVENT_BUS.register(this);
-        modContainer.registerConfig(ModConfig.Type.CLIENT, Config.SPEC);
+    public SlimPickings() {
+        MinecraftForge.EVENT_BUS.register(this);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.SPEC);
 
-        if (FMLEnvironment.dist == Dist.CLIENT) {
-            modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
-        }
+        ModMessages.register();
     }
 
     public static void setPlayerKey(UUID uuid, boolean held) {
@@ -42,13 +35,13 @@ public class SlimPickings {
     }
 
     @SubscribeEvent
-    public void onEntityPickupPre(ItemEntityPickupEvent.Pre event) {
-        if (event.getPlayer() instanceof ServerPlayer player) {
+    public void onEntityPickup(EntityItemPickupEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
             if (Config.BIG_PICKINGS.get()) {
                 return;
             }
             if (!isKeyHeld(player.getUUID())) {
-                event.setCanPickup(TriState.FALSE);
+                event.setCanceled(true);
             }
         }
     }
