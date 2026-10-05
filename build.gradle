@@ -54,16 +54,19 @@ minecraft {
     }
 }
 
-// Tells MixinGradle where to find your refmap and config
 mixin {
     add sourceSets.main, "slim_pickings.refmap.json"
     config "slim_pickings.mixins.json"
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets {
+    main {
+        ext.refMap = "slim_pickings.refmap.json"
+        resources { srcDir 'src/generated/resources' }
+    }
+}
 
 repositories {
-    // SpongePowered Repository required for MixinGradle and annotation processor
     maven {
         name = 'SpongePowered'
         url = 'https://repo.spongepowered.org/repository/maven-public/'
@@ -72,8 +75,6 @@ repositories {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-
-    // Mixin Annotation Processor for proper refmap generation
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
@@ -124,4 +125,7 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    options.compilerArgs += [
+        "-AoutRefMapFile=${project.buildDir}/resources/main/slim_pickings.refmap.json"
+    ]
 }
