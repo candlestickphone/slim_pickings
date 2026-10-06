@@ -54,16 +54,11 @@ minecraft {
     }
 }
 
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
 mixin {
     add sourceSets.main, "slim_pickings.refmap.json"
     config "slim_pickings.mixins.json"
-}
-
-sourceSets {
-    main {
-        ext.refMap = "slim_pickings.refmap.json"
-        resources { srcDir 'src/generated/resources' }
-    }
 }
 
 repositories {
@@ -125,7 +120,4 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.compilerArgs += [
-        "-AoutRefMapFile=${project.buildDir}/resources/main/slim_pickings.refmap.json"
-    ]
 }

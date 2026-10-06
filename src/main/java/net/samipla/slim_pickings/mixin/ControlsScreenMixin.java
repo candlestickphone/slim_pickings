@@ -11,7 +11,9 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.samipla.slim_pickings.Config;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @OnlyIn(Dist.CLIENT)
 @Mixin(ControlsScreen.class)
@@ -20,14 +22,15 @@ public abstract class ControlsScreenMixin extends net.minecraft.client.gui.scree
     public ControlsScreenMixin(net.minecraft.client.gui.screens.Screen screen, net.minecraft.client.Options options) {
         super(screen, options, Component.translatable("controls.title"));
     }
-    
-    @Overwrite
-    protected void init() {
-        super.init();
+
+    @Inject(method = "init", at = @At("TAIL"))
+    private void slim_pickings$rebuildControlsScreen(CallbackInfo ci) {
+        this.clearWidgets();
+
         int i = this.width / 2 - 155;
         int j = i + 160;
         int k = this.height / 6;
-        
+
         this.addRenderableWidget(
             Button.builder(Component.translatable("options.mouse_settings"), button -> this.minecraft.setScreen(new MouseSettingsScreen(this, this.options)))
                .bounds(i, k, 150, 20)

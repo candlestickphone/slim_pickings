@@ -20,38 +20,33 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @OnlyIn(Dist.CLIENT)
 @Mixin(ItemEntityRenderer.class)
-public class ItemEntityRendererMixin {
+public abstract class ItemEntityRendererMixin {
 
     @Inject(
         method = "render(Lnet/minecraft/world/entity/item/ItemEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", 
         at = @At("HEAD")
     )
-    private void slim_pickings$onRenderHead(ItemEntity entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci) {
-        float spin = ((float) entity.getAge() + partialTicks) / 20.0F + entity.bobOffs;
+    private void slim_pickings$modifyItemTransform(ItemEntity entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci) {
+        try {
+            float spin = ((float) entity.getAge() + partialTicks) / 20.0F + entity.bobOffs;
 
-        Minecraft mc = Minecraft.getInstance();
-        boolean targeted = PickupTargetUtils.getTargetedItemEntity(mc) == entity;
-        boolean isTargetedOrPicking = ClientModEvents.isPicking() || targeted;
+            Minecraft mc = Minecraft.getInstance();
+            boolean targeted = PickupTargetUtils.getTargetedItemEntity(mc) == entity;
+            boolean isTargetedOrPicking = ClientModEvents.isPicking() || targeted;
 
-        float targetRot = spin;
-        Player player = mc.player;
-        if (isTargetedOrPicking && player != null) {
-            double x = player.getX() - entity.getX();
-            double z = player.getZ() - entity.getZ();
-            targetRot = (float) -Mth.atan2(z, x) + (float) (Math.PI / 2);
+            float targetRot = spin;
+            Player player = mc.player;
+            if (isTargetedOrPicking && player != null) {
+                double x = player.getX() - entity.getX();
+                double z = player.getZ() - entity.getZ();
+                targetRot = (float) -Mth.atan2(z, x) + (float) (Math.PI / 2);
+            }
+
+            float finalRot = ItemEntityRendererUtils.getTargetRotation(entity, targetRot, isTargetedOrPicking, partialTicks);
+            poseStack.mulPose(Axis.YP.rotation(finalRot - spin));
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        float finalRot = ItemEntityRendererUtils.getTargetRotation(entity, targetRot, isTargetedOrPicking, partialTicks);
-
-        poseStack.pushPose();
-        poseStack.mulPose(Axis.YP.rotation(finalRot - spin));
-    }
-
-    @Inject(
-        method = "render(Lnet/minecraft/world/entity/item/ItemEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", 
-        at = @At("RETURN")
-    )
-    private void slim_pickings$onRenderReturn(ItemEntity entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci) {
-        poseStack.popPose();
     }
 }
